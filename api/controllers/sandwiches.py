@@ -4,7 +4,7 @@ from ..models import models, schemas
 
 
 def create(db: Session, sandwich: schemas.SandwichCreate):
-    # Create a new instance of the Sandwich model with the provided data
+    # Create a new instance of Sandwich model
     db_sandwich = models.Sandwich(
         sandwich_name=sandwich.sandwich_name,
         price=sandwich.price
@@ -13,7 +13,7 @@ def create(db: Session, sandwich: schemas.SandwichCreate):
     db.add(db_sandwich)
     # Commit the changes to the database
     db.commit()
-    # Refresh the Sandwich object to ensure it reflects the current state in the database
+    # Refresh the  object to ensure it reflects the current state in the database
     db.refresh(db_sandwich)
     # Return the newly created Sandwich object
     return db_sandwich
@@ -49,5 +49,5 @@ def delete(db: Session, sandwich_id):
     db_sandwich.delete(synchronize_session=False)
     # Commit the changes to the database
     db.commit()
-    # Return a response with a status code indicating success (204 No Content)
+    # Return response with a status code indicating success (204 No Content)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
