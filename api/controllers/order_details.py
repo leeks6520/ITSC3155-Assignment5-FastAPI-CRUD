@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Response, Depends
 from ..models import models, schemas
 
-#new orderdetail
+#new orderdetail, follow the same template as orders.py
 def create(db: Session, detail: schemas.OrderDetailCreate):
     # Create a new instance 
     db_detail = models.OrderDetail(

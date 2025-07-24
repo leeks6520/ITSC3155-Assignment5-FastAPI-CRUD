@@ -2,7 +2,7 @@ from sqlalchemy.orm import Session
 from fastapi import HTTPException, status, Response, Depends
 from ..models import models, schemas
 
-
+#new recipe, follow the same template as orders.py
 def create(db: Session, recipe: schemas.RecipeCreate):
     # create new instance of the Recipe model with the provided data
     db_recipe = models.Recipe(

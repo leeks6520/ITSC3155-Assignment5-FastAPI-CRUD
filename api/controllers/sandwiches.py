@@ -3,6 +3,7 @@ from fastapi import HTTPException, status, Response, Depends
 from ..models import models, schemas
 
 
+#new sandwich, follow the same template as orders.py
 def create(db: Session, sandwich: schemas.SandwichCreate):
     # Create a new instance of Sandwich model
     db_sandwich = models.Sandwich(

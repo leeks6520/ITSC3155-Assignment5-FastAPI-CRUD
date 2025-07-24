@@ -1,57 +1,47 @@
 from sqlalchemy.orm import Session
-from sqlalchemy.orm import Session
-from fastapi import HTTPException, status, Response, Depends
-from ..models import models, schemas
+from fastapi import HTTPException, status, Response
+from .models import models, schemas  # Absolute import
+from .dependencies.database import get_db
+from typing import Annotated
 
-
-def create(db: Session, recipe: schemas.RecipeCreate):
-    # Create a new instance of the Recipe model with the provided data
-    db_recipe = models.Recipe(
-        sandwich_id=recipe.sandwich_id,
-        resource_id=recipe.resource_id,
-        amount=recipe.amount
-    )
-    # Add the newly created Recipe object to the database session
-    db.add(db_recipe)
-    # Commit the changes to the database
+#new resource, follow the same template as orders.py
+def create(db: Session, resource: schemas.ResourceCreate):
+    db_resource = models.Resource(**resource.model_dump())
+    db.add(db_resource)
     db.commit()
-    # Refresh the Recipe object to ensure it reflects the current state in the database
-    db.refresh(db_recipe)
-    # Return the newly created Recipe object
-    return db_recipe
+    db.refresh(db_resource)
+    return db_resource
 
 
 def read_all(db: Session):
-    # Query and return all recipes from the database
-    return db.query(models.Recipe).all()
+    return db.query(models.Resource).all()
 
 
-def read_one(db: Session, recipe_id):
-    # Query and return a specific recipe by ID
-    return db.query(models.Recipe).filter(models.Recipe.id == recipe_id).first()
+def read_one(db: Session, resource_id: int):
+    resource = db.query(models.Resource).filter(models.Resource.id == resource_id).first()
+    if resource is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
+    return resource
 
 
-def update(db: Session, recipe_id, recipe):
-    # Query the database for the specific recipe to update
-    db_recipe = db.query(models.Recipe).filter(models.Recipe.id == recipe_id)
-    # Extract the update data from the provided 'recipe' object
-    update_data = recipe.model_dump(exclude_unset=True)
-    # Update the database record with the new data, without synchronizing the session
-    db_recipe.update(update_data, synchronize_session=False)
-    # Commit the changes to the database
+def update(db: Session, resource_id: int, resource: schemas.ResourceUpdate):
+    db_resource = db.query(models.Resource).filter(models.Resource.id == resource_id).first()
+    if db_resource is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
+
+    for key, value in resource.model_dump(exclude_unset=True).items():
+        setattr(db_resource, key, value)
+
+    db.add(db_resource)  # Mark for update
     db.commit()
-    # Return the updated recipe record
-    return db_recipe.first()
+    db.refresh(db_resource)
+    return db_resource
 
 
-def delete(db: Session, recipe_id):
-    # Query the database for the specific recipe to delete
-    db_recipe = db.query(models.Recipe).filter(models.Recipe.id == recipe_id)
-    # Delete the database record without synchronizing the session
-    db_recipe.delete(synchronize_session=False)
-    # Commit the changes to the database
+def delete(db: Session, resource_id: int):
+    resource = db.query(models.Resource).filter(models.Resource.id == resource_id).first()
+    if resource is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Resource not found")
+    db.delete(resource)
     db.commit()
-    # Return a response with a status code indicating success (204 No Content)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
-
-
